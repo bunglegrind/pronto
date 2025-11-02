@@ -1,0 +1,16 @@
+{
+  "name": "pronto",
+  "version": "1.0.0",
+  "description": "> *Extremism in the pursuit of parallelism is no vice.*",
+  "main": "pronto.js",
+  "scripts": {
+    "test": "node --test test.js",
+    "test-only": "node --test-only test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "engines" : {
+      "node" : ">=20.0.0"
+  }
+}
