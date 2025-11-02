@@ -77,7 +77,7 @@ test("empty fallback requestor array", function () {
 
 test("empty race requestor array", function () {
     assert.throws(
-        () => pronto.race([])(empty_callback)
+        () => pronto.race([])(empty_callback, true)
     );
 });
 
