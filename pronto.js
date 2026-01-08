@@ -1,6 +1,6 @@
 // pronto.js
 // Douglas Crockford
-// 2025-11-01
+// 2026-01-06
 
 // You can access the pronto object by importing it.
 //      import pronto from "./pronto.js";
@@ -51,7 +51,11 @@ function run(
 // If the requestor_array is empty, fire the callback immediately.
 
     if (requestor_array.length === 0) {
-        callback(initial_value);
+        callback(
+            advance
+            ? initial_value
+            : []
+        );
         return;
     }
 
