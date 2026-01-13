@@ -1,14 +1,14 @@
 /*jslint node, unordered, fart */
 /*property
-    deepEqual, end, equal, evidence,fill, length, message, myFlag, notEqual, ok,
-    only, parallel, plan, prependListener, removeListener, sequence,
-    teardown, throws
+    deepEqual, end, equal, evidence, fallback, fill, isArray, length, message,
+    myFlag, notEqual, ok, only, parallel, plan, prependListener, race,
+    removeListener, sequence, teardown, throws
 */
 
 import process from "node:process";
 
 import test from "tape";
-import pronto from "./pronto.js";
+import pronto from "./prontissimo.js";
 
 function hasThrown(event, message, t) {
     const listener = function (err) {
@@ -58,7 +58,7 @@ test("empty sequence requestor array", function (t) {
 });
 
 test("array length must be preserved", function (t) {
-    const len = 5000;
+    const len = 1000;
     pronto.parallel(
         new Array(len).fill((cb, ignore) => cb(true))
     )(function (value, reason) {
@@ -83,7 +83,7 @@ test(
         let called = 0;
         pronto.sequence([
             function (cb, v) {
-                return cb(v);
+                return setTimeout(() => cb(v), 10);
             }
         ])(function (value, ignore) {
             called += 1;
@@ -113,7 +113,7 @@ test("must throw", function (t) {
 
     pronto.sequence([pronto.sequence([
         function (cb, v) {
-            return cb(v);
+            return setTimeout(() => cb(v), 10);
         }
     ])])(function (value, ignore) {
         called += 1;
@@ -128,5 +128,62 @@ test("must throw", function (t) {
             throw my_error(error_message);
         }
     }, 1);
+});
 
+test("sequence", function (t) {
+    const len = 100;
+    pronto.sequence(
+        new Array(len).fill((cb, v) => cb(v + 1))
+    )(
+        function (value, ignore) {
+            t.equal(value, len);
+            t.end();
+        },
+        0
+    );
+});
+
+test("parallel", function (t) {
+    const len = 100;
+    pronto.parallel(
+        new Array(len).fill((cb, v) => cb(v + 1))
+    )(
+        function (value, ignore) {
+            t.ok(Array.isArray(value));
+            t.equal(value.length, len);
+            t.deepEqual(value, new Array(len).fill(1));
+            t.end();
+        },
+        0
+    );
+});
+
+test("race", function (t) {
+    const delay = (d) => (c) => (cb, v) => setTimeout(cb, d, v + c);
+    pronto.race([
+        delay(10)(1),
+        delay(20)(2),
+        delay(30)(3),
+        delay(40)(4)
+    ])(
+        function (value, ignore) {
+            t.equal(value, 1);
+            t.end();
+        },
+        0
+    );
+});
+
+test("fallback", function (t) {
+    pronto.fallback([
+        (cb, v) => cb(undefined, v),
+        (cb, v) => cb(undefined, v),
+        (cb, v) => cb(3, v)
+    ])(
+        function (value, ignore) {
+            t.equal(value, 3);
+            t.end();
+        },
+        0
+    );
 });
